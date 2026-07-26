@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Ethiopian artisanal garment or luxury Habesha dress",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 50 },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "description": { "type": "string", "maxLength": 2000 },
+        "image": { "type": "string", "maxLength": 1000 },
+        "stock": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" }
+      },
+      "required": ["name", "category", "price", "description", "stock"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Customer or Admin user account",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 150 },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["Customer", "Admin"] },
+        "phone": { "type": "string", "maxLength": 50 },
+        "address": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["email", "name", "role"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer clothing order placement",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerEmail": { "type": "string", "maxLength": 150 },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"] },
+        "shippingAddress": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "customerName", "customerEmail", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product catalog items"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Orders placed by customers"
+    }
+  }
+}

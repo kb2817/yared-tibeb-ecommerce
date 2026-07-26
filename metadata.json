@@ -1,0 +1,6 @@
+{
+  "name": "YARED TIBEB",
+  "description": "Luxury Ethiopian traditional fashion e-commerce platform featuring handmade Habesha dresses, traditional suits, editorial design, customer & admin dashboards, and order management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

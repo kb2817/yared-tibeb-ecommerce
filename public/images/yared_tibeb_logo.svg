@@ -1,0 +1,103 @@
+<svg viewBox="0 0 500 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- GOLD BACKGROUND FOR FULL STANDALONE SVG LOGO -->
+  <!-- Top Arch Frame -->
+  <path d="M 35,215 A 215,215 0 0,1 465,215" stroke="#D4AF37" stroke-width="12" fill="none" />
+  <path d="M 70,215 A 180,180 0 0,1 430,215" stroke="#D4AF37" stroke-width="6" fill="none" />
+
+  <!-- Arch Zigzag Triangles -->
+  <g fill="#D4AF37">
+    <!-- 17 Triangles along arc -->
+    <polygon points="68,212 90,212 79,180" />
+    <polygon points="85,178 107,184 91,148" />
+    <polygon points="108,145 128,157 108,120" />
+    <polygon points="135,118 153,132 130,95" />
+    <polygon points="168,92 184,108 158,74" />
+    <polygon points="204,72 220,88 191,58" />
+    <polygon points="242,56 258,72 228,47" />
+    <polygon points="282,50 298,64 268,44" />
+    <polygon points="320,54 334,70 307,48" />
+    <polygon points="358,68 370,86 346,60" />
+    <polygon points="392,88 402,108 382,78" />
+    <polygon points="420,114 428,136 410,102" />
+    <polygon points="440,144 446,166 432,130" />
+    <polygon points="452,176 456,198 446,160" />
+  </g>
+
+  <!-- Woman Silhouette -->
+  <g fill="#D4AF37">
+    <!-- Afro Curly Hair Profile -->
+    <path d="M 235 75 C 220 65, 205 80, 210 95 C 200 105, 205 125, 220 132 C 225 140, 240 145, 250 142 C 265 145, 280 135, 282 120 C 290 110, 285 90, 275 80 C 265 70, 250 68, 235 75 Z" />
+    
+    <!-- Face Profile facing right -->
+    <path d="M 265 115 C 272 120, 275 128, 272 135 C 268 142, 260 145, 252 145 L 250 158 L 258 160 C 265 160, 270 168, 270 178 L 270 210 L 203 210 L 203 178 C 203 165, 212 158, 220 158 L 228 158 L 226 145 C 220 142, 218 135, 222 128 Z" />
+
+    <!-- Dress straps -->
+    <path d="M 215 160 L 222 210 L 232 210 L 227 160 Z" />
+    <path d="M 260 160 L 253 210 L 243 210 L 248 160 Z" />
+  </g>
+
+  <!-- Middle Banner Bar -->
+  <rect x="10" y="210" width="480" height="85" stroke="#D4AF37" stroke-width="10" fill="#1A0F0B" rx="2" />
+  <rect x="22" y="222" width="456" height="61" stroke="#D4AF37" stroke-width="3" fill="none" />
+
+  <!-- Banner Text: "YARED ❖ TIBEB" -->
+  <g fill="#D4AF37">
+    <text x="250" y="267" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="40" font-weight="900" letter-spacing="5" text-anchor="middle">
+      YARED <tspan font-size="30" dy="-4">❖</tspan><tspan dy="4"> </tspan>TIBEB
+    </text>
+  </g>
+
+  <!-- Bottom Flared Pleated Skirt / Kemis Dress -->
+  <g fill="#D4AF37">
+    <!-- Skirt Outer Silhouette -->
+    <path d="M 30 300 
+             L 88 485 
+             L 140 495 
+             L 192 508 
+             L 250 515 
+             L 308 508 
+             L 360 495 
+             L 412 485 
+             L 470 300 
+             Z" />
+
+    <!-- Panel Dividers -->
+    <path d="M 90 300 L 138 488" stroke="#1A0F0B" stroke-width="5" />
+    <path d="M 152 300 L 190 502" stroke="#1A0F0B" stroke-width="5" />
+    <path d="M 212 300 L 248 510" stroke="#1A0F0B" stroke-width="5" />
+    <path d="M 288 300 L 252 510" stroke="#1A0F0B" stroke-width="5" />
+    <path d="M 348 300 L 310 502" stroke="#1A0F0B" stroke-width="5" />
+    <path d="M 410 300 L 362 488" stroke="#1A0F0B" stroke-width="5" />
+
+    <!-- Inner Tibeb Patterns on Pleated Edges -->
+    <g fill="#1A0F0B">
+      <polygon points="48,325 68,325 58,308" />
+      <polygon points="72,355 92,355 82,338" />
+      <polygon points="96,385 116,385 106,368" />
+      <polygon points="120,415 140,415 130,398" />
+      <polygon points="144,445 164,445 154,428" />
+
+      <polygon points="452,325 432,325 442,308" />
+      <polygon points="428,355 408,355 418,338" />
+      <polygon points="404,385 384,385 394,368" />
+      <polygon points="380,415 360,415 370,398" />
+      <polygon points="356,445 336,445 346,428" />
+
+      <!-- Bottom border repeating triangles -->
+      <polygon points="100,480 116,480 108,465" />
+      <polygon points="122,482 138,482 130,467" />
+      <polygon points="144,485 160,485 152,470" />
+      <polygon points="166,488 182,488 174,473" />
+      <polygon points="188,492 204,492 196,477" />
+      <polygon points="210,496 226,496 218,481" />
+      <polygon points="232,500 248,500 240,485" />
+      <polygon points="254,500 270,500 262,485" />
+      <polygon points="276,496 292,496 284,481" />
+      <polygon points="298,492 314,492 306,477" />
+      <polygon points="320,488 336,488 328,473" />
+      <polygon points="342,485 358,485 350,470" />
+      <polygon points="364,482 380,482 372,467" />
+      <polygon points="386,480 402,480 394,465" />
+    </g>
+  </g>
+</svg>
