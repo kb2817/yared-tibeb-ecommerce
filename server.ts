@@ -5,17 +5,37 @@ import { createServer as createViteServer } from 'vite';
 import { INITIAL_PRODUCTS } from './src/data/mockData.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Ensure the public images folder exists for uploads and generated branding links.
+const PUBLIC_DIR = path.join(process.cwd(), 'public');
+const IMAGES_DIR = path.join(PUBLIC_DIR, 'images');
+if (!fs.existsSync(IMAGES_DIR)) {
+  fs.mkdirSync(IMAGES_DIR, { recursive: true });
+}
 
 // In-memory / file-backed persistent database for dev runtime
 const DB_FILE = path.join(process.cwd(), 'data_store.json');
+const SITE_IMAGES_FILE = path.join(process.cwd(), 'site-images.json');
 
 interface DataStore {
   products: any[];
   orders: any[];
   users: any[];
+}
+
+interface SiteImages {
+  heroBanner: string;
+  secondaryBanner: string;
+  aboutImage: string;
+  studioImages: string[];
+  collectionBanner: string;
+  logo: string;
+  footerImage: string;
+  backgroundImages: string[];
+  promoBanners: string[];
 }
 
 function loadDataStore(): DataStore {
@@ -118,7 +138,101 @@ function saveDataStore(data: DataStore) {
   }
 }
 
+function loadSiteImages(): SiteImages {
+  try {
+    if (fs.existsSync(SITE_IMAGES_FILE)) {
+      const content = fs.readFileSync(SITE_IMAGES_FILE, 'utf-8');
+      return JSON.parse(content);
+    }
+  } catch (err) {
+    console.error('Error reading site images file:', err);
+  }
+
+  const defaultSiteImages: SiteImages = {
+    heroBanner: '/images/ethiopian_habesha_kemis_1784988107480.jpg',
+    secondaryBanner: '/images/ethiopian_portrait_craft_1784988380745.jpg',
+    aboutImage: '/images/ethiopian_portrait_craft_1784988380745.jpg',
+    studioImages: [
+      '/images/habesha_royal_kemis_1784988585842.jpg',
+      '/images/ethiopian_men_suit_1784988598365.jpg',
+      '/images/enkutatash_gold_dress_1784988610001.jpg'
+    ],
+    collectionBanner: '/images/tibeb_blazer_modern_1784988621121.jpg',
+    logo: '/images/yared_tibeb_logo_1784972279664.jpg',
+    footerImage: '/images/family_heritage_set_1784988636375.jpg',
+    backgroundImages: ['/images/lalibela_bridal_kemis_1784988649913.jpg'],
+    promoBanners: ['/images/semien_evening_gown_1784988673878.jpg']
+  };
+
+  fs.writeFileSync(SITE_IMAGES_FILE, JSON.stringify(defaultSiteImages, null, 2), 'utf-8');
+  return defaultSiteImages;
+}
+
+function saveSiteImages(data: SiteImages) {
+  try {
+    fs.writeFileSync(SITE_IMAGES_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving site images file:', err);
+  }
+}
+
+const INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/yared_tibeb?igsh=MW5hNXI5NXQyd3Q4NA==';
+
+async function fetchInstagramFeedImages(): Promise<string[]> {
+  try {
+    const res = await fetch(INSTAGRAM_PROFILE_URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Instagram fetch failed with ${res.status}`);
+    }
+
+    const html = await res.text();
+    const sharedDataMatch = html.match(/window\._sharedData = (.+?);<\/script>/s);
+    const images: string[] = [];
+
+    if (sharedDataMatch) {
+      try {
+        const sharedData = JSON.parse(sharedDataMatch[1]);
+        const edges = sharedData?.entry_data?.ProfilePage?.[0]?.graphql?.user?.edge_owner_to_timeline_media?.edges || [];
+        for (const edge of edges) {
+          const node = edge?.node;
+          if (!node) continue;
+          if (node.display_url) images.push(node.display_url);
+          else if (node.thumbnail_src) images.push(node.thumbnail_src);
+          else if (node?.edge_sidecar_to_children?.edges) {
+            for (const childEdge of node.edge_sidecar_to_children.edges) {
+              const childNode = childEdge?.node;
+              if (childNode?.display_url) images.push(childNode.display_url);
+            }
+          }
+          if (images.length >= 9) break;
+        }
+      } catch (err) {
+        console.error('Instagram sharedData parse error:', err);
+      }
+    }
+
+    if (images.length === 0) {
+      const ogMatches = [...html.matchAll(/property="og:image" content="([^"]+)"/g)];
+      ogMatches.slice(0, 9).forEach((match) => {
+        if (match[1]) images.push(match[1]);
+      });
+    }
+
+    return images.slice(0, 9);
+  } catch (err) {
+    console.error('Instagram feed fetch error:', err);
+    return [];
+  }
+}
+
 let db = loadDataStore();
+let siteImages = loadSiteImages();
 
 // API ROUTES
 
@@ -166,6 +280,52 @@ app.post('/api/auth/login', (req, res) => {
 
   const { password: _, ...userWithoutPass } = user;
   return res.json({ user: userWithoutPass, token: `mock-jwt-token-${user.id}` });
+});
+
+app.get('/api/site-images', (req, res) => {
+  return res.json(siteImages);
+});
+
+app.put('/api/site-images', (req, res) => {
+  const updates = req.body;
+  siteImages = {
+    ...siteImages,
+    ...updates
+  };
+  saveSiteImages(siteImages);
+  return res.json(siteImages);
+});
+
+app.post('/api/site-images/upload', (req, res) => {
+  const { fileName, fileData } = req.body;
+  if (!fileName || !fileData) {
+    return res.status(400).json({ error: 'File name and data are required' });
+  }
+
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(fileData);
+  if (!match) {
+    return res.status(400).json({ error: 'Invalid file data format' });
+  }
+
+  const extension = path.extname(fileName) || `.${match[1].split('/')[1]}`;
+  const baseName = path.basename(fileName, path.extname(fileName));
+  const safeBaseName = baseName.replace(/[^a-zA-Z0-9._-]/g, '-');
+  const destName = `${Date.now()}-${safeBaseName}${extension}`;
+  const destPath = path.join(process.cwd(), 'public', 'images', destName);
+
+  try {
+    const buffer = Buffer.from(match[2], 'base64');
+    fs.writeFileSync(destPath, buffer);
+    return res.json({ path: `/images/${destName}` });
+  } catch (err) {
+    console.error('Upload save error:', err);
+    return res.status(500).json({ error: 'Unable to save uploaded image' });
+  }
+});
+
+app.get('/api/instagram-live-feed', async (req, res) => {
+  const images = await fetchInstagramFeedImages();
+  return res.json({ images });
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -409,6 +569,7 @@ app.get('/api/admin/stats', (req, res) => {
   });
 });
 
+app.use(express.static(path.join(process.cwd(), 'public')));
 app.use('/src/assets', express.static(path.join(process.cwd(), 'src/assets')));
 
 async function startServer() {

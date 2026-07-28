@@ -81,6 +81,17 @@ export interface InstagramPost {
   comments: number;
 }
 
+export interface SiteImages {
+  heroBanner: string;
+  secondaryBanner: string;
+  aboutImage: string;
+  studioImages: string[];
+  collectionBanner: string;
+  logo: string;
+  backgroundImages: string[];
+  promoBanners: string[];
+}
+
 export interface DashboardStats {
   totalRevenue: number;
   totalOrders: number;

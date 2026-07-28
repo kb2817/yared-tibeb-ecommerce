@@ -211,15 +211,15 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-[#2C1A14]">
                     <span className="flex items-center space-x-1">
                       <DollarSign size={14} className="text-[#C59B27]" />
-                      <span>Price Range (USD)</span>
+                      <span>Price Range (ETB)</span>
                     </span>
-                    <span className="text-[#C59B27] font-semibold">${minPrice} - ${maxPrice}</span>
+                    <span className="text-[#C59B27] font-semibold">ETB {minPrice} - ETB {maxPrice}</span>
                   </div>
 
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center space-x-2">
                       <div className="flex-1">
-                        <label className="text-[10px] text-[#2C1A14]/60 uppercase">Min ($)</label>
+                        <label className="text-[10px] text-[#2C1A14]/60 uppercase">Min (ETB)</label>
                         <input
                           type="number"
                           min={0}
@@ -231,7 +231,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                       </div>
                       <span className="text-[#2C1A14]/40 mt-3">-</span>
                       <div className="flex-1">
-                        <label className="text-[10px] text-[#2C1A14]/60 uppercase">Max ($)</label>
+                        <label className="text-[10px] text-[#2C1A14]/60 uppercase">Max (ETB)</label>
                         <input
                           type="number"
                           min={minPrice}

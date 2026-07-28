@@ -97,11 +97,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-baseline space-x-3">
                   <span className="font-serif-heading text-3xl font-bold text-[#2C1A14]">
-                    ${product.price} USD
+                    ETB {product.price}
                   </span>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <span className="text-base text-[#2C1A14]/50 line-through">
-                      ${product.originalPrice} USD
+                      ETB {product.originalPrice}
                     </span>
                   )}
                 </div>
@@ -110,7 +110,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="bg-gradient-to-r from-red-950/10 via-amber-900/10 to-transparent p-2.5 border-l-4 border-[#C59B27] flex items-center justify-between text-xs font-semibold text-[#2C1A14]">
                     <div className="flex items-center space-x-2">
                       <Tag size={15} className="text-[#C59B27]" />
-                      <span>Special Heritage Offer: You Save <strong>${product.originalPrice - product.price} USD</strong></span>
+                      <span>Special Heritage Offer: You Save <strong>ETB {product.originalPrice - product.price}</strong></span>
                     </div>
                     <span className="bg-red-900 text-[#FFD700] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
                       {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF

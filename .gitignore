@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+yared-tibeb-ecommerce/
+node_modules/
+__pycache__/

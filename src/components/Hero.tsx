@@ -1,13 +1,17 @@
 import React from 'react';
 import { ArrowRight, Sparkles, Award } from 'lucide-react';
-const heroImage = '/images/ethiopian_habesha_kemis_1784988107480.jpg';
+
+// Use Vite asset URL resolution so the homepage hero image loads correctly
+// regardless of the deployed site base path or preview environment.
+const heroImage = new URL('../assets/images/ethiopian_habesha_kemis_1784988107480.jpg', import.meta.url).href;
 
 interface HeroProps {
+  imageUrl?: string;
   onShopClick: () => void;
   onHeritageClick: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onShopClick, onHeritageClick }) => {
+export const Hero: React.FC<HeroProps> = ({ imageUrl, onShopClick, onHeritageClick }) => {
   return (
     <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-[#FAF6F0] via-[#FAF5EE] to-[#F4ECE1]">
       {/* Decorative Gold Radial Glow */}
@@ -26,7 +30,7 @@ export const Hero: React.FC<HeroProps> = ({ onShopClick, onHeritageClick }) => {
               {/* Main Editorial Image Container */}
               <div className="relative overflow-hidden bg-[#2C1A14] aspect-[4/5] shadow-2xl group">
                 <img
-                  src={heroImage}
+                  src={imageUrl || heroImage}
                   alt="YARED TIBEB Royal Habesha Kemis with Traditional Hand-Embroidered Circular Flared Skirt"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-1000 ease-out"

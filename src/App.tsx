@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product, CartItem, User, Order } from './types';
+import { Product, CartItem, User, Order, SiteImages } from './types';
 import { INITIAL_PRODUCTS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -25,6 +25,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'home' | 'catalog' | 'dashboard' | 'admin'>('home');
   const [searchQuery, setSearchQuery] = useState('');
+  const [siteImages, setSiteImages] = useState<SiteImages | null>(null);
 
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -37,6 +38,7 @@ export default function App() {
   useEffect(() => {
     fetchProducts();
     checkAuthSession();
+    fetchSiteImages();
   }, []);
 
   const fetchProducts = async () => {
@@ -44,7 +46,7 @@ export default function App() {
       const res = await fetch('/api/products');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setProducts(data);
         }
       }
@@ -69,6 +71,18 @@ export default function App() {
       }
     } catch (err) {
       console.error('Check auth session error:', err);
+    }
+  };
+
+  const fetchSiteImages = async () => {
+    try {
+      const res = await fetch('/api/site-images');
+      if (res.ok) {
+        const data = await res.json();
+        setSiteImages(data);
+      }
+    } catch (err) {
+      console.error('Fetch site images error:', err);
     }
   };
 
@@ -139,6 +153,7 @@ export default function App() {
         cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         wishlistCount={wishlistIds.length}
         currentUser={currentUser}
+        logoSrc={siteImages?.logo}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         onNavigate={(view) => {
@@ -165,6 +180,7 @@ export default function App() {
         {currentView === 'home' && (
           <>
             <Hero
+              imageUrl={siteImages?.heroBanner}
               onShopClick={() => {
                 setCurrentView('catalog');
                 const el = document.getElementById('catalog-section');
@@ -186,9 +202,9 @@ export default function App() {
               searchQuery={searchQuery}
             />
 
-            <BrandStory />
+            <BrandStory imageUrl={siteImages?.aboutImage} />
 
-            <InstagramFeed />
+            <InstagramFeed studioImages={siteImages?.studioImages} />
 
             <Testimonials />
 
@@ -220,7 +236,11 @@ export default function App() {
         )}
 
         {currentView === 'admin' && currentUser?.role === 'Admin' && (
-          <AdminDashboard onReturnToStorefront={() => setCurrentView('home')} />
+          <AdminDashboard
+            onReturnToStorefront={() => setCurrentView('home')}
+            onSiteImagesUpdate={(images) => setSiteImages(images)}
+            onProductsUpdated={fetchProducts}
+          />
         )}
       </main>
 

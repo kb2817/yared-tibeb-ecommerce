@@ -1,0 +1,30 @@
+{
+  "heroBanner": "/images/1785185218006-9ac59e33cfc7736fb9b076aac6a01f3c.jpg",
+  "secondaryBanner": "/images/1785184388762-27b2495e-b96c-4851-a2d4-6e02442f1345.jpeg",
+  "aboutImage": "/images/1785185267569-9cbe05a323958d96801977b801d3179c.jpg",
+  "studioImages": [
+    "/images/1785185507218-4a0af4a6c9d4e10ab9cdb7e9da3600f7.jpg",
+    "/images/1785185514859-315ff3c05028e963f9c341a77c3c21df.jpg",
+    "/images/1785185520780-e40224ce1fe02dba8228623b005ec70b.jpg",
+    "/images/1785185526488-1809ad8c8c20aa1b336cfd1e7c82744d.jpg",
+    "/images/1785185535978-5915a2f0eb9509b523ebd5de92698653.jpg",
+    "/images/1785185543481-3fa9cb47ee20acae219deb89fc827f56.jpg",
+    "/images/1785185550197-a5eaa96ead23b708648ff62ac9a7bd59.jpg",
+    "/images/1785185557699-37645d54b760495a627fbfd6ab60569b.jpg",
+    "/images/1785185566750-a4494a3f0ebce110643085c819b9a316.jpg",
+    "/images/1785185576101-4b08f857a3515015f6f74d246b6ec31f.jpg",
+    "/images/1785185581859-54de47a1a256e3d1a99ef1df8271a065.jpg",
+    "/images/1785185587667-c70bec54528184702f867eb22d50265f.jpg"
+  ],
+  "collectionBanner": "/images/tibeb_blazer_modern_1784988621121.jpg",
+  "logo": "/images/1785184435355-Poster-1.jpg",
+  "footerImage": "/images/family_heritage_set_1784988636375.jpg",
+  "backgroundImages": [
+    "/images/lalibela_bridal_kemis_1784988649913.jpg",
+    "/images/1785184582323-yared-product-1.jpg",
+    "/images/1785184596098-9ac59e33cfc7736fb9b076aac6a01f3c.jpg"
+  ],
+  "promoBanners": [
+    "/images/semien_evening_gown_1784988673878.jpg"
+  ]
+}

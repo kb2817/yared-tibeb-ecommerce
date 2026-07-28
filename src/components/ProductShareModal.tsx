@@ -95,7 +95,7 @@ export const ProductShareModal: React.FC<ProductShareModalProps> = ({ product, o
               {product.name}
             </p>
             <p className="text-xs text-[#C59B27] font-bold">
-              ${product.price} USD
+              ETB {product.price}
             </p>
             <p className="text-[10px] text-[#2C1A14]/70 uppercase tracking-wider">
               yaredtibeb.com

@@ -134,18 +134,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                       <div className="flex items-baseline space-x-2 pt-0.5">
                         <span className="text-xs font-bold text-[#C59B27]">
-                          ${item.product.price} USD
+                          ETB {item.product.price}
                         </span>
                         {hasDiscount && (
                           <span className="text-[11px] text-[#2C1A14]/40 line-through">
-                            ${item.product.originalPrice} USD
+                            ETB {item.product.originalPrice}
                           </span>
                         )}
                       </div>
 
                       {hasDiscount && (
                         <div className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 inline-block rounded">
-                          Saved ${itemSavings} USD
+                          Saved ETB {itemSavings}
                         </div>
                       )}
 
@@ -246,34 +246,34 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 {catalogSavings > 0 && (
                   <div className="flex items-center justify-between text-[#2C1A14]/60">
                     <span>Original Price Total</span>
-                    <span className="line-through">${totalOriginal.toFixed(2)} USD</span>
+                    <span className="line-through">ETB {totalOriginal.toFixed(2)}</span>
                   </div>
                 )}
 
                 {catalogSavings > 0 && (
                   <div className="flex items-center justify-between text-emerald-800 font-medium">
                     <span>Heritage Catalog Discount</span>
-                    <span>-${catalogSavings.toFixed(2)} USD</span>
+                    <span>- ETB {catalogSavings.toFixed(2)}</span>
                   </div>
                 )}
 
                 {appliedPromo && promoSavings > 0 && (
                   <div className="flex items-center justify-between text-emerald-800 font-medium">
                     <span>Coupon ({appliedPromo.code}) Savings</span>
-                    <span>-${promoSavings.toFixed(2)} USD</span>
+                    <span>- ETB {promoSavings.toFixed(2)}</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between text-[#2C1A14] pt-1 border-t border-[#ECE3D4]">
                   <span className="font-bold text-sm">Total Payable</span>
                   <span className="font-bold text-base font-serif-heading text-[#2C1A14]">
-                    ${finalTotal.toFixed(2)} USD
+                    ETB {finalTotal.toFixed(2)}
                   </span>
                 </div>
 
                 {(catalogSavings > 0 || promoSavings > 0) && (
                   <div className="bg-emerald-900 text-emerald-100 text-[10px] font-bold py-1 px-2.5 rounded text-center mt-1">
-                    🎉 Total Savings: ${(catalogSavings + promoSavings).toFixed(2)} USD
+                    🎉 Total Savings: ETB {(catalogSavings + promoSavings).toFixed(2)}
                   </div>
                 )}
 

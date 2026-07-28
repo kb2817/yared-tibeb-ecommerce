@@ -138,7 +138,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div className="flex justify-between">
                 <span className="font-semibold text-[#2C1A14]">Total Amount Charged:</span>
                 <span className="font-serif-heading text-sm font-bold text-[#2C1A14]">
-                  ${placedOrder.totalPrice} USD
+                  ETB {placedOrder.totalPrice}
                 </span>
               </div>
             </div>
@@ -260,7 +260,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="p-4 bg-[#FAF5EE] border border-[#ECE3D4] flex items-center justify-between text-sm">
               <span className="font-bold text-[#2C1A14]">Grand Total:</span>
               <span className="font-serif-heading text-2xl font-bold text-[#2C1A14]">
-                ${subtotal.toFixed(2)} USD
+                ETB {subtotal.toFixed(2)}
               </span>
             </div>
 
@@ -269,7 +269,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               disabled={isSubmitting}
               className="w-full py-4 bg-[#2C1A14] text-[#FAF6F0] hover:bg-[#D4AF37] hover:text-[#1A0F0B] font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl disabled:opacity-50"
             >
-              {isSubmitting ? 'Processing Order...' : `Pay $${subtotal.toFixed(2)} & Complete Order`}
+              {isSubmitting ? 'Processing Order...' : `Pay ETB ${subtotal.toFixed(2)} & Complete Order`}
             </button>
           </form>
         )}

@@ -1,8 +1,14 @@
 import React from 'react';
 import { Eye, Target, Instagram, Facebook, Phone, Share2 } from 'lucide-react';
-const brandStoryImage = '/images/ethiopian_portrait_craft_1784988380745.jpg';
 
-export const BrandStory: React.FC = () => {
+// Vite asset resolution for the About Us hero image preview.
+const brandStoryImage = new URL('../assets/images/ethiopian_portrait_craft_1784988380745.jpg', import.meta.url).href;
+
+interface BrandStoryProps {
+  imageUrl?: string;
+}
+
+export const BrandStory: React.FC<BrandStoryProps> = ({ imageUrl }) => {
   const socialLinks = [
     {
       name: 'Instagram',
@@ -86,7 +92,7 @@ export const BrandStory: React.FC = () => {
           <div className="lg:col-span-5 space-y-4">
             <div className="relative aspect-[4/5] bg-[#2C1A14] border border-[#D4AF37]/30 shadow-2xl overflow-hidden group rounded-sm">
               <img
-                src={brandStoryImage}
+                src={imageUrl || brandStoryImage}
                 alt="Traditional Ethiopian Fine Woven Craftsmanship & Habesha Kemis"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"

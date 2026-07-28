@@ -7,6 +7,7 @@ interface NavbarProps {
   cartCount: number;
   wishlistCount: number;
   currentUser: User | null;
+  logoSrc?: string;
   onOpenCart: () => void;
   onOpenAuth: () => void;
   onNavigate: (view: 'home' | 'catalog' | 'heritage' | 'dashboard' | 'admin') => void;
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   cartCount,
   wishlistCount,
   currentUser,
+  logoSrc,
   onOpenCart,
   onOpenAuth,
   onNavigate,
@@ -42,6 +44,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const scrollToStudioSection = () => {
+    setTimeout(() => {
+      const el = document.getElementById('instagram-feed');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 150);
+  };
 
   return (
     <header
@@ -71,7 +82,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className="group"
           >
-            <Logo variant="header" size="md" />
+            <Logo variant="header" size="md" src={logoSrc} />
           </button>
 
           {/* Desktop Navigation Links */}
@@ -109,8 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => {
                 onNavigate('home');
-                const el = document.getElementById('instagram-feed');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                scrollToStudioSection();
               }}
               className="text-sm uppercase tracking-wider font-medium text-[#2C1A14] hover:text-[#D4AF37] transition-colors"
             >
@@ -206,14 +216,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {currentUser.role === 'Admin' && (
                   <button
                     onClick={() => onNavigate('admin')}
-                    className={`p-1.5 rounded-full transition-colors ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                       currentView === 'admin'
                         ? 'bg-[#D4AF37] text-[#1A0F0B]'
                         : 'bg-[#2C1A14] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#1A0F0B]'
                     }`}
                     title="Admin Control Panel"
                   >
-                    <Shield size={16} />
+                    <Shield size={14} />
+                    <span>Admin</span>
                   </button>
                 )}
               </div>
@@ -267,8 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => {
                 onNavigate('home');
                 setIsMobileMenuOpen(false);
-                const el = document.getElementById('instagram-feed');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                scrollToStudioSection();
               }}
               className="text-left text-sm uppercase tracking-wider font-semibold text-[#2C1A14]"
             >

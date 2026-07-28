@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Product, Order, User, DashboardStats, OrderStatus } from '../types';
-import { Shield, BarChart3, Package, ShoppingBag, Users, Plus, Edit2, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X } from 'lucide-react';
+import { Product, Order, User, DashboardStats, OrderStatus, SiteImages } from '../types';
+import { Shield, BarChart3, Package, ShoppingBag, Users, Plus, UploadCloud, Edit2, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface AdminDashboardProps {
   onReturnToStorefront: () => void;
+  onSiteImagesUpdate?: (images: SiteImages) => void;
+  onProductsUpdated?: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStorefront }) => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'products' | 'orders' | 'users'>('analytics');
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStorefront, onSiteImagesUpdate, onProductsUpdated }) => {
+  const [activeTab, setActiveTab] = useState<'analytics' | 'branding' | 'products' | 'orders' | 'users'>('analytics');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [siteImages, setSiteImages] = useState<SiteImages | null>(null);
+  const [siteImageUpdates, setSiteImageUpdates] = useState<Partial<SiteImages>>({});
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // New/Edit Product Modal state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -33,22 +39,129 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [statsRes, prodRes, ordRes, usrRes] = await Promise.all([
+      const [statsRes, prodRes, ordRes, usrRes, siteImagesRes] = await Promise.all([
         fetch('/api/admin/stats'),
         fetch('/api/products'),
         fetch('/api/admin/orders'),
-        fetch('/api/admin/users')
+        fetch('/api/admin/users'),
+        fetch('/api/site-images')
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (prodRes.ok) setProducts(await prodRes.json());
       if (ordRes.ok) setOrders(await ordRes.json());
       if (usrRes.ok) setUsers(await usrRes.json());
+      if (siteImagesRes.ok) {
+        const images = await siteImagesRes.json();
+        setSiteImages(images);
+        setSiteImageUpdates(images);
+      }
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFieldChange = (field: keyof SiteImages, value: string | string[]) => {
+    setSiteImageUpdates((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const uploadFile = async (file: File) => {
+    const fileData = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject(new Error('Upload failed'));
+      };
+      reader.onerror = () => reject(new Error('Upload failed'));
+      reader.readAsDataURL(file);
+    });
+
+    const res = await fetch('/api/site-images/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: file.name, fileData })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error?.error || 'Upload failed');
+    }
+
+    const { path } = await res.json();
+    return path as string;
+  };
+
+  const handleUploadBrandImage = async (field: keyof SiteImages, files: FileList | File[]) => {
+    setUploading(true);
+    setErrorMessage('');
+
+    try {
+      const fileArray = Array.from(files);
+      const paths = await Promise.all(fileArray.map((file) => uploadFile(file)));
+
+      if (field === 'studioImages' || field === 'backgroundImages' || field === 'promoBanners') {
+        const existing = siteImageUpdates[field] as string[] | undefined;
+        const updatedArray = Array.isArray(existing) ? [...existing, ...paths] : [...paths];
+        handleFieldChange(field, updatedArray);
+      } else {
+        handleFieldChange(field, paths[0]);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUploadProductImage = async (files: FileList | File[]) => {
+    setUploading(true);
+    setErrorMessage('');
+
+    try {
+      const fileArray = Array.from(files);
+      const paths = await Promise.all(fileArray.map((file) => uploadFile(file)));
+      if (paths.length > 0) {
+        setProdImage(paths[0]);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSaveSiteImages = async () => {
+    if (!siteImageUpdates) return;
+    try {
+      const res = await fetch('/api/site-images', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteImageUpdates)
+      });
+      if (!res.ok) throw new Error('Unable to save branding updates');
+      const images = await res.json();
+      setSiteImages(images);
+      setSiteImageUpdates(images);
+      if (onSiteImagesUpdate) onSiteImagesUpdate(images);
+    } catch (err) {
+      console.error('Save site images error:', err);
+    }
+  };
+
+  const handleRemoveSiteImage = (field: keyof SiteImages, index: number) => {
+    const existing = (siteImageUpdates[field] as string[]) || ((siteImages as any)[field] as string[]) || [];
+    if (!Array.isArray(existing)) return;
+    const updated = existing.filter((_, idx) => idx !== index);
+    handleFieldChange(field, updated);
+  };
+
+  const handleClearStudioGallery = () => {
+    handleFieldChange('studioImages', []);
   };
 
   const handleOpenNewProduct = () => {
@@ -88,21 +201,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
     };
 
     try {
-      if (editingProductId) {
-        await fetch(`/api/products/${editingProductId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-      } else {
-        await fetch('/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      const res = editingProductId
+        ? await fetch(`/api/products/${editingProductId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+        : await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || 'Unable to save product');
       }
+
       setIsProductModalOpen(false);
-      loadAdminData();
+      await loadAdminData();
+      if (onProductsUpdated) onProductsUpdated();
     } catch (err) {
       console.error('Save product error:', err);
     }
@@ -111,8 +229,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
-      await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      loadAdminData();
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || 'Unable to delete product');
+      }
+      await loadAdminData();
+      if (onProductsUpdated) onProductsUpdated();
     } catch (err) {
       console.error('Delete product error:', err);
     }
@@ -167,26 +290,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[#ECE3D4] space-x-8 text-sm">
-          {[
-            { key: 'analytics', label: 'Dashboard Analytics', icon: <BarChart3 size={18} /> },
-            { key: 'products', label: `Products (${products.length})`, icon: <Package size={18} /> },
-            { key: 'orders', label: `Orders (${orders.length})`, icon: <ShoppingBag size={18} /> },
-            { key: 'users', label: `Users (${users.length})`, icon: <Users size={18} /> }
-          ].map((tab) => (
+        <div className="flex flex-col gap-3">
+          <div className="flex border-b border-[#ECE3D4] space-x-8 text-sm">
+            {[
+              { key: 'analytics', label: 'Dashboard Analytics', icon: <BarChart3 size={18} /> },
+              { key: 'branding', label: 'Branding Images', icon: <Shield size={18} /> },
+              { key: 'products', label: `Products (${products.length})`, icon: <Package size={18} /> },
+              { key: 'orders', label: `Orders (${orders.length})`, icon: <ShoppingBag size={18} /> },
+              { key: 'users', label: `Users (${users.length})`, icon: <Users size={18} /> }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`pb-3 font-semibold uppercase tracking-wider transition-all flex items-center space-x-2 ${
+                  activeTab === tab.key
+                    ? 'border-b-2 border-[#D4AF37] text-[#D4AF37]'
+                    : 'text-[#2C1A14]/70 hover:text-[#2C1A14]'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-[#FAF5EE] border border-[#ECE3D4] rounded-xl p-4 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="font-semibold text-[#2C1A14]">Want to add a new product?</p>
+              <p className="text-[#2C1A14]/70 text-xs">Upload a new garment quickly from the admin console.</p>
+            </div>
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`pb-3 font-semibold uppercase tracking-wider transition-all flex items-center space-x-2 ${
-                activeTab === tab.key
-                  ? 'border-b-2 border-[#D4AF37] text-[#D4AF37]'
-                  : 'text-[#2C1A14]/70 hover:text-[#2C1A14]'
-              }`}
+              onClick={handleOpenNewProduct}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#2C1A14] text-[#FAF6F0] hover:bg-[#D4AF37] hover:text-[#1A0F0B] font-bold uppercase tracking-wider text-xs transition-colors"
             >
-              {tab.icon}
-              <span>{tab.label}</span>
+              <Plus size={16} />
+              Upload Product
             </button>
-          ))}
+          </div>
         </div>
 
         {/* TAB 1: DASHBOARD ANALYTICS */}
@@ -198,7 +338,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
               <div className="bg-[#FAF5EE] border-t-4 border-[#D4AF37] border-x border-b border-[#ECE3D4] p-6 shadow">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#C59B27]">Total Revenue</p>
                 <p className="font-serif-heading text-3xl font-bold text-[#2C1A14] mt-1">
-                  ${stats.totalRevenue.toLocaleString()} USD
+                {stats.totalRevenue.toLocaleString()} ETB
                 </p>
               </div>
 
@@ -294,6 +434,148 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
         )}
 
         {/* TAB 2: PRODUCT MANAGEMENT */}
+        {activeTab === 'branding' && (
+          <div className="space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
+              <div>
+                <h3 className="font-serif-heading text-xl font-bold text-[#2C1A14]">Branding & Site Media</h3>
+                <p className="text-sm text-[#2C1A14]/70 max-w-2xl">
+                  Update homepage and brand imagery without touching product data. Upload files directly or paste hosted image URLs.
+                </p>
+              </div>
+              <button
+                onClick={handleSaveSiteImages}
+                disabled={uploading}
+                className="px-4 py-2 bg-[#2C1A14] text-[#FAF6F0] hover:bg-[#D4AF37] hover:text-[#1A0F0B] font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Branding Images
+              </button>
+            </div>
+
+            {errorMessage && (
+              <div className="rounded-lg bg-red-100 border border-red-200 text-red-800 p-4 text-sm">
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {siteImages && (
+                [
+                  { label: 'Hero Banner', key: 'heroBanner' },
+                  { label: 'Secondary Banner', key: 'secondaryBanner' },
+                  { label: 'About Section Image', key: 'aboutImage' },
+                  { label: 'Logo', key: 'logo' },
+                  { label: 'Collection Banner', key: 'collectionBanner' }
+                ].map(({ label, key }) => (
+                  <div key={key} className="bg-[#FAF5EE] border border-[#ECE3D4] rounded-3xl p-5 shadow-sm">
+                    <h4 className="font-semibold text-[#2C1A14] mb-3">{label}</h4>
+                    <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/20 mb-4 bg-white h-52">
+                      <img
+                        src={(siteImageUpdates as any)[key] || (siteImages as any)[key]}
+                        alt={label}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <label className="block text-[11px] uppercase tracking-[0.2em] text-[#2C1A14]/70 mb-2">Image URL</label>
+                    <input
+                      type="text"
+                      value={(siteImageUpdates as any)[key] || ''}
+                      onChange={(e) => handleFieldChange(key as keyof SiteImages, e.target.value)}
+                      className="w-full bg-white border border-[#ECE3D4] p-3 text-sm leading-6"
+                    />
+                    <label className="block text-[11px] uppercase tracking-[0.2em] text-[#2C1A14]/70 mt-4 mb-2">Upload File</label>
+                    <label className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-[#D4AF37]/30 bg-[#2C1A14] text-[#FAF6F0] px-4 py-3 text-sm font-semibold cursor-pointer hover:bg-[#D4AF37] hover:text-[#1A0F0B] transition-colors">
+                      <UploadCloud size={16} />
+                      <span>Choose Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files && files.length > 0) handleUploadBrandImage(key as keyof SiteImages, files);
+                        }}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {siteImages && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {[
+                  { label: 'Studio Gallery', key: 'studioImages' },
+                  { label: 'Background Images', key: 'backgroundImages' },
+                  { label: 'Promo Banners', key: 'promoBanners' }
+                ].map(({ label, key }) => {
+                  const currentImages = ((siteImageUpdates as any)[key] || (siteImages as any)[key] || []) as string[];
+
+                  return (
+                    <div key={key} className="bg-[#FAF5EE] border border-[#ECE3D4] rounded-3xl p-5 shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-[#2C1A14]">{label}</h4>
+                        {key === 'studioImages' && currentImages.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleClearStudioGallery}
+                            className="text-[11px] uppercase tracking-[0.2em] text-[#D4AF37] hover:text-[#1A0F0B] bg-[#2C1A14] border border-[#D4AF37]/30 px-3 py-1 rounded-full transition-colors"
+                          >
+                            Clear Gallery
+                          </button>
+                        )}
+                      </div>
+
+                      {currentImages.length === 0 ? (
+                        <div className="border border-dashed border-[#D4AF37]/30 rounded-3xl p-8 text-center text-sm text-[#2C1A14]/80 bg-white">
+                          {key === 'studioImages'
+                            ? 'Studio gallery is empty. Upload new studio images to populate the live feed.'
+                            : 'No images yet. Add uploads to preview here.'}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          {currentImages.map((url: string, idx: number) => (
+                            <div key={`${key}-${idx}`} className="relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-white h-32">
+                              <img src={url} alt={`${label} ${idx + 1}`} className="w-full h-full object-cover" />
+                              {key === 'studioImages' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSiteImage(key as keyof SiteImages, idx)}
+                                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[#1A0F0B]/80 text-[#FAF6F0] flex items-center justify-center hover:bg-[#D4AF37] transition-colors"
+                                  title="Remove image"
+                                >
+                                  <X size={16} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <label className="block text-[11px] uppercase tracking-[0.2em] text-[#2C1A14]/70 mb-2">Upload Extra Image</label>
+                      <label className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-[#D4AF37]/30 bg-[#2C1A14] text-[#FAF6F0] px-4 py-3 text-sm font-semibold cursor-pointer hover:bg-[#D4AF37] hover:text-[#1A0F0B] transition-colors">
+                        <UploadCloud size={16} />
+                        <span>Choose Image</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            const files = e.target.files;
+                            if (files && files.length > 0) handleUploadBrandImage(key as keyof SiteImages, files);
+                          }}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'products' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -332,10 +614,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
                       </td>
                       <td className="p-3 font-semibold text-[#C59B27]">{p.category}</td>
                       <td className="p-3">
-                        <div className="font-bold text-[#2C1A14]">${p.price} USD</div>
+                        <div className="font-bold text-[#2C1A14]">ETB {p.price}</div>
                         {p.originalPrice && p.originalPrice > p.price && (
                           <div className="flex items-center space-x-1 text-[10px]">
-                            <span className="line-through text-[#2C1A14]/50">${p.originalPrice}</span>
+                            <span className="line-through text-[#2C1A14]/50">ETB {p.originalPrice}</span>
                             <span className="bg-red-900 text-amber-200 px-1 py-0.2 font-bold rounded">
                               {Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)}% OFF
                             </span>
@@ -400,7 +682,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
                         <p className="font-bold text-[#2C1A14]">{o.customerName}</p>
                         <p className="text-[10px] text-[#2C1A14]/60">{o.customerEmail}</p>
                       </td>
-                      <td className="p-3 font-bold">${o.totalPrice} USD</td>
+                      <td className="p-3 font-bold">ETB {o.totalPrice}</td>
                       <td className="p-3 font-bold text-emerald-800">{o.status}</td>
                       <td className="p-3 font-mono text-[10px]">{o.trackingNumber}</td>
                       <td className="p-3 text-right">
@@ -509,7 +791,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
                   </div>
 
                   <div>
-                    <label className="block font-bold mb-1">Sale Price ($ USD) *</label>
+                    <label className="block font-bold mb-1">Sale Price (ETB) *</label>
                     <input
                       type="number"
                       required
@@ -522,7 +804,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold mb-1">Original Price ($ USD) <span className="text-[10px] text-[#C59B27] font-normal">(Optional for Discount)</span></label>
+                    <label className="block font-bold mb-1">Original Price (ETB) <span className="text-[10px] text-[#C59B27] font-normal">(Optional for Discount)</span></label>
                     <input
                       type="number"
                       placeholder="e.g. 550"
@@ -532,7 +814,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
                     />
                     {prodOriginalPrice && Number(prodOriginalPrice) > Number(prodPrice) && (
                       <span className="text-[10px] text-emerald-800 font-bold block mt-1">
-                        Discount: {Math.round((((Number(prodOriginalPrice) - Number(prodPrice)) / Number(prodOriginalPrice)) * 100))}% OFF (Save ${Number(prodOriginalPrice) - Number(prodPrice)})
+                        Discount: {Math.round((((Number(prodOriginalPrice) - Number(prodPrice)) / Number(prodOriginalPrice)) * 100))}% OFF (Save ETB {Number(prodOriginalPrice) - Number(prodPrice)})
                       </span>
                     )}
                   </div>
@@ -549,15 +831,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
                   </div>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <label className="block font-bold mb-1">Image URL *</label>
-                  <input
-                    type="url"
-                    required
-                    value={prodImage}
-                    onChange={(e) => setProdImage(e.target.value)}
-                    className="w-full bg-white border p-2 focus:border-[#D4AF37]"
-                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="url"
+                      required
+                      value={prodImage}
+                      onChange={(e) => setProdImage(e.target.value)}
+                      className="w-full bg-white border p-2 focus:border-[#D4AF37]"
+                    />
+                    <label className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D4AF37]/30 bg-[#2C1A14] text-[#FAF6F0] px-4 py-2 text-sm font-semibold cursor-pointer hover:bg-[#D4AF37] hover:text-[#1A0F0B] transition-colors">
+                      <UploadCloud size={16} />
+                      <span>Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files && files.length > 0) handleUploadProductImage(files);
+                        }}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div>

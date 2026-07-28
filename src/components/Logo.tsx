@@ -1,8 +1,12 @@
 import React from 'react';
 
-const logoSvg = '/images/yared_tibeb_logo.svg';
+// Use the public image path with Vite base URL so the logo loads correctly in preview
+// and WordPress deployment environments. The actual logo asset remains managed
+// as a branding image only, with no WooCommerce product changes.
+const logoSvg = `${import.meta.env.BASE_URL}images/yared_tibeb_logo.svg`;
 
 interface LogoProps {
+  src?: string;
   variant?: 'light' | 'dark' | 'header';
   showText?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -11,12 +15,15 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({
+  src,
   variant = 'header',
   showText = true,
   size = 'md',
   className = '',
   directOnly = false
 }) => {
+  const logoSrcToUse = src || logoSvg;
+
   const sizeMap = {
     sm: 'w-10 h-10',
     md: 'w-12 h-12 sm:w-14 sm:h-14',
@@ -35,7 +42,7 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Exact Reference Gold Emblem Graphic */}
       <div className={`relative ${sizeMap[size]} shrink-0 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center`}>
         <img
-          src={logoSvg}
+          src={logoSrcToUse}
           alt="YARED TIBEB Gold Emblem Logo"
           referrerPolicy="no-referrer"
           className="w-full h-full object-contain filter drop-shadow-sm"

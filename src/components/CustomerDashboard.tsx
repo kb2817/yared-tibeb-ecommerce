@@ -199,7 +199,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
                       <div className="text-left sm:text-right">
                         <span className="font-serif-heading text-xl font-bold text-[#2C1A14]">
-                          ${order.totalPrice} USD
+                          ETB {order.totalPrice}
                         </span>
                         <p className="text-xs text-emerald-800 font-semibold">
                           Status: {order.status}
@@ -339,7 +339,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   {currentUser.membershipTier || 'Gold Habesha'}
                 </h4>
                 <p className="text-[11px] text-[#FAF6F0]/80">
-                  Earn 1 Heritage Point for every $10 spent on authentic garments.
+                  Earn 1 Heritage Point for every ETB 10 spent on authentic garments.
                 </p>
               </div>
 
