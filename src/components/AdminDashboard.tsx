@@ -172,7 +172,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onReturnToStoref
     setProdOriginalPrice(550);
     setProdStock(10);
     setProdDesc('');
-    setProdImage('https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=1000');
+    setProdImage('');
     setIsProductModalOpen(true);
   };
 

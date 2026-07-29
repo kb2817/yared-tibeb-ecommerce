@@ -3,6 +3,89 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { INITIAL_PRODUCTS } from './src/data/mockData.js';
+import crypto from 'crypto';
+
+// ============================================================
+// AUTHENTICATION UTILITIES (Phase A: Critical Security Fixes)
+// Uses Node.js built-in crypto — no external dependencies needed
+// ============================================================
+
+const JWT_SECRET = process.env.JWT_SECRET || 'yared_tibeb_super_secure_jwt_secret_2026_ethiopian_heritage';
+const TOKEN_EXPIRY_HOURS = 24 * 7; // 7 days
+
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${hash}`;
+}
+
+function verifyPassword(password: string, storedHash: string): boolean {
+  try {
+    if (storedHash.startsWith('scrypt:')) {
+      const parts = storedHash.split(':');
+      if (parts.length !== 3) return false;
+      const [, salt, hash] = parts;
+      const computedHash = crypto.scryptSync(password, salt, 64).toString('hex');
+      return crypto.timingSafeEqual(
+        Buffer.from(hash, 'hex'),
+        Buffer.from(computedHash, 'hex')
+      );
+    }
+    return password === storedHash;
+  } catch {
+    return false;
+  }
+}
+
+function createToken(userId: string, role: string): string {
+  const payload = {
+    userId,
+    role,
+    exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_HOURS * 3600
+  };
+  const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', JWT_SECRET)
+    .update(payloadBase64)
+    .digest('base64url');
+  return `${payloadBase64}.${signature}`;
+}
+
+function verifyToken(token: string): { userId: string; role: string } | null {
+  try {
+    const [payloadBase64, signature] = token.split('.');
+    if (!payloadBase64 || !signature) return null;
+    const expectedSignature = crypto
+      .createHmac('sha256', JWT_SECRET)
+      .update(payloadBase64)
+      .digest('base64url');
+    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+      return null;
+    }
+    const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return { userId: payload.userId, role: payload.role };
+  } catch {
+    return null;
+  }
+}
+
+function requireAuth(req: any, res: any, next: any) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Not authenticated' });
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+  const decoded = verifyToken(token);
+  if (!decoded) return res.status(401).json({ error: 'Invalid or expired token' });
+  req.user = decoded;
+  next();
+}
+
+function requireAdmin(req: any, res: any, next: any) {
+  requireAuth(req, res, () => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ error: 'Admin access required' });
+    next();
+  });
+}
 
 const app = express();
 const PORT = 5000;
@@ -54,7 +137,7 @@ function loadDataStore(): DataStore {
       id: 'usr-admin',
       name: 'Yared Administrator',
       email: 'admin@yaredtibeb.com',
-      password: 'adminpassword123',
+      password: hashPassword('adminpassword123'),
       role: 'Admin',
       phone: '+251 91 123 4567',
       address: 'Bole Road, Imperial Building #402, Addis Ababa, Ethiopia',
@@ -66,7 +149,7 @@ function loadDataStore(): DataStore {
       id: 'usr-cust-1',
       name: 'Bethlehem Tassew',
       email: 'customer@yaredtibeb.com',
-      password: 'customerpassword123',
+      password: hashPassword('customerpassword123'),
       role: 'Customer',
       phone: '+1 202 555 0192',
       address: '1428 NW Peacock Ave, Washington, DC 20001, USA',
@@ -252,7 +335,7 @@ app.post('/api/auth/register', (req, res) => {
     id: `usr-${Date.now()}`,
     name,
     email,
-    password,
+    password: hashPassword(password),
     role: 'Customer',
     phone: phone || '',
     address: address || '',
@@ -265,7 +348,7 @@ app.post('/api/auth/register', (req, res) => {
   saveDataStore(db);
 
   const { password: _, ...userWithoutPass } = newUser;
-  return res.json({ user: userWithoutPass, token: `mock-jwt-token-${newUser.id}` });
+  return res.json({ user: userWithoutPass, token: createToken(newUser.id, newUser.role) });
 });
 
 app.post('/api/auth/login', (req, res) => {
@@ -274,12 +357,12 @@ app.post('/api/auth/login', (req, res) => {
     (u) => u.email.toLowerCase() === (email || '').toLowerCase()
   );
 
-  if (!user || user.password !== password) {
+  if (!user || !verifyPassword(password, user.password)) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
   const { password: _, ...userWithoutPass } = user;
-  return res.json({ user: userWithoutPass, token: `mock-jwt-token-${user.id}` });
+  return res.json({ user: userWithoutPass, token: createToken(user.id, user.role) });
 });
 
 app.get('/api/site-images', (req, res) => {
@@ -328,13 +411,8 @@ app.get('/api/instagram-live-feed', async (req, res) => {
   return res.json({ images });
 });
 
-app.get('/api/auth/me', (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-  const userId = authHeader.replace('Bearer mock-jwt-token-', '');
-  const user = db.users.find((u) => u.id === userId);
+app.get('/api/auth/me', requireAuth, (req: any, res) => {
+  const user = db.users.find((u) => u.id === req.user.userId);
   if (!user) {
     return res.status(401).json({ error: 'User session not found' });
   }
@@ -342,13 +420,8 @@ app.get('/api/auth/me', (req, res) => {
   return res.json({ user: userWithoutPass });
 });
 
-app.put('/api/auth/me', (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-  const userId = authHeader.replace('Bearer mock-jwt-token-', '');
-  const userIndex = db.users.findIndex((u) => u.id === userId);
+app.put('/api/auth/me', requireAuth, (req: any, res) => {
+  const userIndex = db.users.findIndex((u) => u.id === req.user.userId);
   if (userIndex === -1) {
     return res.status(404).json({ error: 'User not found' });
   }
@@ -502,11 +575,11 @@ app.get('/api/orders/:id', (req, res) => {
 });
 
 // Admin endpoints
-app.get('/api/admin/orders', (req, res) => {
+app.get('/api/admin/orders', requireAdmin, (req, res) => {
   return res.json(db.orders);
 });
 
-app.put('/api/admin/orders/:id', (req, res) => {
+app.put('/api/admin/orders/:id', requireAdmin, (req, res) => {
   const { status, trackingNumber } = req.body;
   const index = db.orders.findIndex((o) => o.id === req.params.id);
   if (index === -1) {
@@ -520,12 +593,12 @@ app.put('/api/admin/orders/:id', (req, res) => {
   return res.json(db.orders[index]);
 });
 
-app.get('/api/admin/users', (req, res) => {
+app.get('/api/admin/users', requireAdmin, (req, res) => {
   const safeUsers = db.users.map(({ password, ...u }) => u);
   return res.json(safeUsers);
 });
 
-app.get('/api/admin/stats', (req, res) => {
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
   const totalRevenue = db.orders.reduce((sum, o) => sum + (o.status !== 'Cancelled' ? o.totalPrice : 0), 0);
   const totalOrders = db.orders.length;
   const totalCustomers = db.users.length;

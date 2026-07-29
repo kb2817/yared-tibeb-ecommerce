@@ -2,48 +2,6 @@
   "products": [],
   "orders": [
     {
-      "id": "ORD-83467",
-      "userId": "guest",
-      "customerName": "Kibrom Berhe",
-      "customerEmail": "kibromberhe2817@gmail.com",
-      "items": [
-        {
-          "productId": "yt-4673",
-          "productName": "serg (XL)",
-          "productImage": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=1000",
-          "quantity": 1,
-          "price": 450
-        }
-      ],
-      "status": "Pending",
-      "totalPrice": 450,
-      "shippingAddress": "new, Phone: +251921995139",
-      "trackingNumber": "YT-ETH-626829-INTL",
-      "paymentMethod": "PayPal / International Wire",
-      "createdAt": "2026-07-27T18:19:37.870Z"
-    },
-    {
-      "id": "ORD-41197",
-      "userId": "usr-cust-1",
-      "customerName": "Bethlehem Tassew",
-      "customerEmail": "customer@yaredtibeb.com",
-      "items": [
-        {
-          "productId": "yt-005",
-          "productName": "Family Heritage Matching Set (M)",
-          "productImage": "/images/family_heritage_set_1784988636375.jpg",
-          "quantity": 2,
-          "price": 620
-        }
-      ],
-      "status": "Pending",
-      "totalPrice": 1240,
-      "shippingAddress": "1428 NW Peacock Ave, Washington, DC 20001, USA, Phone: +1 202 555 0192",
-      "trackingNumber": "YT-ETH-454532-INTL",
-      "paymentMethod": "Credit Card (Visa / Mastercard)",
-      "createdAt": "2026-07-27T10:38:06.304Z"
-    },
-    {
       "id": "ORD-84920",
       "userId": "usr-cust-1",
       "customerName": "Bethlehem Tassew",
@@ -62,7 +20,7 @@
       "shippingAddress": "1428 NW Peacock Ave, Washington, DC 20001, USA",
       "trackingNumber": "YT-ETH-884920-US",
       "paymentMethod": "Credit Card (Visa ending in 4242)",
-      "createdAt": "2026-07-13T10:03:15.443Z"
+      "createdAt": "2026-07-15T08:49:56.185Z"
     },
     {
       "id": "ORD-91024",
@@ -83,7 +41,7 @@
       "shippingAddress": "1428 NW Peacock Ave, Washington, DC 20001, USA",
       "trackingNumber": "YT-ETH-910242-US",
       "paymentMethod": "Credit Card (Visa ending in 4242)",
-      "createdAt": "2026-07-24T10:03:15.443Z"
+      "createdAt": "2026-07-26T08:49:56.185Z"
     }
   ],
   "users": [
@@ -91,25 +49,25 @@
       "id": "usr-admin",
       "name": "Yared Administrator",
       "email": "admin@yaredtibeb.com",
-      "password": "adminpassword123",
+      "password": "scrypt:acc8b505e0bdec11f4a74c5240db4011:6de10632ad32b548b8018ef072f64a910d9a98e77528f4816b86692af94d8761a845fcc88ea3be0fe4badf3907591136f56ea8e915954d352a5c9c0d296287e8",
       "role": "Admin",
       "phone": "+251 91 123 4567",
       "address": "Bole Road, Imperial Building #402, Addis Ababa, Ethiopia",
       "loyaltyPoints": 1250,
       "membershipTier": "Royal Axumite",
-      "createdAt": "2026-07-27T10:03:15.443Z"
+      "createdAt": "2026-07-29T08:49:56.110Z"
     },
     {
       "id": "usr-cust-1",
       "name": "Bethlehem Tassew",
       "email": "customer@yaredtibeb.com",
-      "password": "customerpassword123",
+      "password": "scrypt:40e09ed0a60593a23bda03f95d13445d:11059cede858f140f1a34b6681528d8cc0b717676c1f4489edb0c9ff76d00a5499e2f635ab095c9baa7b2df9b2a1fc3f1ecd1b9d8b317b06a1ff5210bb7df0a1",
       "role": "Customer",
       "phone": "+1 202 555 0192",
       "address": "1428 NW Peacock Ave, Washington, DC 20001, USA",
-      "loyaltyPoints": 804,
+      "loyaltyPoints": 680,
       "membershipTier": "Gold Habesha",
-      "createdAt": "2026-06-27T10:03:15.443Z"
+      "createdAt": "2026-06-29T08:49:56.185Z"
     }
   ]
 }
