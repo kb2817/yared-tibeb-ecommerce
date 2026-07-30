@@ -5,7 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { INITIAL_PRODUCTS } from './src/data/mockData.js';
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '10mb' }));
 
